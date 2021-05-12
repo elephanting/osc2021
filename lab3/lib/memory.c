@@ -68,16 +68,6 @@ void frame_init() {
 
     char str[20]; // for itoa
     memset(str, 0, 20);
-    
-    /*
-    str[0] = '0';
-    str[1] = '1';
-    str[2] = '\0';
-    str[3] = '2';
-    str[4] = '3';
-    str[5] = '\0';
-    uart_puts(str);
-    */
 
     // initialize Blocks
     for (int i = 0; i < total_index; i++) {
