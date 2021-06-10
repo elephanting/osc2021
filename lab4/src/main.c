@@ -86,13 +86,14 @@ int main() {
                 uart_puts("Invalid pathname!!\n");
             }
         }
-        /*
+        
         else if (!strcmp(buf, "loadprog")) {
             if (!load_prog("user_prog", (unsigned char *)0x70000)) {
                 uart_puts("Invalid program name!!\n");
             }
         }
-        */
+        
+        
         else {
             uart_puts("Error: ");
             uart_puts(buf);

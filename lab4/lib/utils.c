@@ -168,7 +168,7 @@ int ls(char *input, int readfile) {
     }
 }
 
-void load_prog(char *path, unsigned char *addr, int load) {
+void load_prog(char *path) {
     //unsigned char *kernel = (unsigned char *) 0x8000000;
     unsigned char *kernel = (unsigned char *) 0x20000000;
     unsigned char *filename;
@@ -217,16 +217,21 @@ void load_prog(char *path, unsigned char *addr, int load) {
         // exe user program
         else if (!strcmp(filename, path)) {
             filedata = kernel + namesize;
-            for (int i = 0; i < filesize; i++) {
-                addr[i] = filedata[i];
-            }
+            //for (int i = 0; i < filesize; i++) {
+            //    addr[i] = filedata[i];
+            //}
             uart_puts("loading program...\n");
             //asm volatile("mov x0, 0x3c0"); //disable interrupt
             asm volatile("mov x0, 0x340"); //enable interrupt
+            //uart_puts("loading program...\n");
             asm volatile("msr spsr_el1, x0");
-            asm volatile("msr elr_el1, %0"::"r"((unsigned long)addr));
-            asm volatile("msr sp_el0, %0"::"r"((unsigned long)addr));
+            //uart_puts("loading program...\n");
+            asm volatile("msr elr_el1, %0"::"r"((unsigned long)filedata));
+            //uart_puts("loading program...\n");
+            asm volatile("msr sp_el0, %0"::"r"((unsigned long)filedata));
+            //uart_puts("loading program...last\n");
             //asm volatile("eret");
+            //uart_puts("loading program...last\n");
 
             // core_timer_enable
             asm volatile("mov x0, 1");

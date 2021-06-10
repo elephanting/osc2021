@@ -28,14 +28,14 @@ void secondBootloader() {
     kernel = (unsigned char *) 0x80000;
 
     for (int i = 0; i < size; i++) {
-        input = uart_getc();
+        input = uart_getc_boot();
         kernel[i] = input;
-    }
-    for(int i = 0; i < 100000; i++) {
-        asm volatile("nop");
     }
     void (*jump)(void) = kernel;
     uart_puts("Jumping to kernel\n");
+    for(int i = 0; i < 100000; i++) {
+        asm volatile("nop");
+    }
     jump();
 }
 
@@ -62,15 +62,15 @@ void main() {
         input(buf);
         uart_send('\r');
 
-        if(strcmp(buf, help)) {
+        if(!strcmp(buf, help)) {
             uart_puts("help: print all available commands\n");
             uart_puts("reboot: reboot\n");
             uart_puts("loadimg: Load kernel\n");
         }
-        else if(strcmp(buf, reboot)) {
+        else if(!strcmp(buf, reboot)) {
             reset(1000);
         }
-        else if (strcmp(buf, "loadimg")) {
+        else if (!strcmp(buf, "loadimg")) {
             secondBootloader();
         }
         else {

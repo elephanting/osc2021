@@ -12,10 +12,10 @@ _start:
     wfe
     b 1b
 2:
-    //bl from_el2_to_el1
+    bl from_el2_to_el1
 
 3:
-    //bl set_exception_vector_table
+    bl set_exception_vector_table
 
 4:  
     // set stack before our code

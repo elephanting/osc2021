@@ -3,7 +3,6 @@ ENTRY(_start)
 SECTIONS
 {
     . = 0x70000;
-    .text : { KEEP(*(.text.user_prog)) }
     .text :  { *(.text) }
     .rodata : { *(.rodata) }
     .data : { *(.data) }

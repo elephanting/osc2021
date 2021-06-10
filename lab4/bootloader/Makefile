@@ -6,7 +6,7 @@ SRC = $(wildcard src/*.S) $(wildcard ../lib/*.c) $(wildcard src/*.c) $(wildcard 
 OBJ = boot.o $(filter-out boot.o, $(wildcard *.o))
 INC = $(wildcard ../lib/)
 
-BOOT = bootloader
+BOOT = kernel8
 ELF = $(BOOT).elf
 IMG = $(BOOT).img
 
