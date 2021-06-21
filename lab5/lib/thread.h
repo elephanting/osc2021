@@ -1,0 +1,2 @@
+int fork();
+void threadtest();
