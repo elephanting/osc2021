@@ -39,7 +39,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 debug:
-	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -S -s -initrd initramfs.cpio
+	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -serial null -serial stdio -initrd initramfs.cpio -S -s
 
 gdb:
 	$(GDB) $(GDBFLAGS)
