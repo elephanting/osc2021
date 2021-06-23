@@ -12,7 +12,7 @@ ELF = $(KERNEL).elf
 IMG = $(KERNEL).img
 
 CXX = aarch64-linux-gnu-gcc
-CXXFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
+CXXFLAGS = -nostdinc -nostdlib -nostartfiles
 OBJCOPY = aarch64-linux-gnu-objcopy
 OBJCOPYFLAGS = -O binary
 OD = aarch64-linux-gnu-objdump
@@ -39,13 +39,13 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 debug:
-	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -serial null -serial stdio -initrd initramfs.cpio -S -s
+	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -serial null -serial stdio -initrd ./archive/initramfs.cpio -S -s
 
 gdb:
 	$(GDB) $(GDBFLAGS)
 
 run:
-	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -serial null -serial stdio -initrd initramfs.cpio
+	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/$(KERNEL).img -display none -serial null -serial stdio -initrd ./archive/initramfs.cpio
 
 test: 
-	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/bootloader.img -serial null -serial pty -initrd initramfs.cpio
+	qemu-system-aarch64 -M raspi3 -kernel $(BUILD_DIR)/bootloader.img -serial null -serial pty -initrd ./archive/initramfs.cpio

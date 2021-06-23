@@ -24,6 +24,7 @@
  */
 
 #include "gpio.h"
+#include "printf.h"
 
 /* Auxilary mini UART registers */
 #define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
@@ -38,6 +39,7 @@
 #define AUX_MU_CNTL     ((volatile unsigned int*)(MMIO_BASE+0x00215060))
 #define AUX_MU_STAT     ((volatile unsigned int*)(MMIO_BASE+0x00215064))
 #define AUX_MU_BAUD     ((volatile unsigned int*)(MMIO_BASE+0x00215068))
+
 
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
@@ -96,6 +98,18 @@ char uart_getc() {
     return r=='\r'?'\n':r;
 }
 
+int uart_getsize(char* buf, int size) {
+    char ret;
+    for (int i = 0; i < size; i++) {
+        ret = uart_getc();
+        ret = (ret != '\n')? ret : '\0';
+        buf[i] = ret;
+        uart_send(ret);
+        if (!ret) return i;
+    }
+    return size;
+}
+
 char uart_getc_boot() {
     char r;
     /* wait until something is in the buffer */
@@ -116,4 +130,15 @@ void uart_puts(char *s) {
             uart_send('\r');
         uart_send(*s++);
     }
+}
+
+unsigned int uart_printf(char* fmt,...){
+	char dst[100];
+    //__builtin_va_start(args, fmt): "..." is pointed by args
+    //__builtin_va_arg(args,int): ret=(int)*args;args++;return ret;
+    __builtin_va_list args;
+    __builtin_va_start(args,fmt);
+    unsigned int ret=vsprintf(dst,fmt,args);
+    uart_puts(dst);
+    return ret;
 }

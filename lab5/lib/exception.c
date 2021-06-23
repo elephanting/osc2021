@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "thread.h"
 
 void dumpState() {
 	unsigned long esr,elr,spsr;
@@ -12,8 +13,73 @@ void dumpState() {
     uart_puts("\n");
 }
 
+void x0Set(unsigned long v){
+	Task* current;
+	asm volatile("mrs %0, tpidr_el1	\n":"=r"(current):);
+	current->tf[0] = v;
+}
+
 void exception_handler() {
-	dumpState();
+	unsigned long x0, x1, x2;
+	asm volatile("mov %0, x0":"=r"(x0):);
+	asm volatile("mov %0, x1":"=r"(x1):);
+	asm volatile("mov %0, x2":"=r"(x2):);
+	unsigned long esr, svc;
+	asm volatile("mrs %0, esr_el1	\n":"=r"(esr):);
+	if (((esr>>26) & 0x3f) == 0x15) { // 26: reserved bits, 0x3f: EC bits, 0x15: svc64
+		svc = esr & 0x1ffffff; // ISS (Instruction Specific Syndrome)
+		//dumpState();
+		//uart_printf("svc: %d\n", svc);
+		if (svc == 0) {
+			dumpState();
+			return;
+		}
+		//getpid
+		else if (svc == 1) {
+			unsigned long ret = getpid();
+			x0Set(ret);
+			return;
+		}
+		//uart_read
+		else if (svc == 2) {
+			unsigned long ret = uart_getsize((char*)x0, (int)x1);
+			x0Set(ret);
+			return;
+		}
+		//uart_write
+		else if (svc == 3) {
+			uart_puts((char*)x0);
+			x0Set(x1);
+			return;
+		}
+		// exec
+		else if (svc == 4) {
+			exec((char*)x0,(char**)x1);
+			x0Set(0);
+			return;
+		}
+		// exit
+		else if (svc == 5){
+			exit();
+			uart_printf("exit fail at exception handler\n");
+			while(1) {}
+			return;
+		}
+		// fork
+		else if (svc == 6) {
+			Task *current;
+    		//asm volatile("mrs %0, tpidr_el1":"=r"(current):);
+			//uart_printf("exception lr: 0x%x\n", current->lr);
+			//unsigned long ret = fork();
+			unsigned long ret = fork();
+			x0Set(ret);
+			return;
+		}
+	}
+	else {
+		uart_puts("unknown exception...\n");
+		while(1) {}
+	}
 }
 
 void interrupt_handler() {
@@ -30,6 +96,7 @@ void interrupt_handler() {
 	uart_puts("Time Elapsed: ");
     uart_puts(str);
 	uart_puts("s\n");
+	scheduler();
 }
 
 void notImplemented() {

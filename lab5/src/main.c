@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "reboot.h"
 #include "utils.h"
+#include "cpio.h"
 #include "memory.h"
 
 int main() {
@@ -41,6 +42,9 @@ int main() {
         }
         else if(!strcmp(buf, "thread")) {
             threadtest();
+        }
+        else if(!strcmp(buf, "thread2")) {
+            threadtest2();
         }
 
         else if (!strcmp(buf, "demo_frame")) {
@@ -83,6 +87,7 @@ int main() {
                 free(array[i]);
             }
         }
+        /*
         else if (!strcmp(buf, "ls")) {
             ls("\0", 0);
         }
@@ -93,11 +98,17 @@ int main() {
         }
         
         else if (!strcmp(buf, "loadprog")) {
-            if (!load_prog("user_prog", (unsigned char *)0x70000)) {
+            if (!load_prog("user_prog")) {
                 uart_puts("Invalid program name!!\n");
             }
         }
-        
+
+        else if (!strcmp(buf, "test")) {
+            if (!load_prog_test()) {
+                uart_puts("Invalid program name!!\n");
+            }
+        }
+        */
         
         else {
             uart_puts("Error: ");

@@ -23,10 +23,5 @@
  *
  */
 
-void uart_init();
-void uart_send(unsigned int c);
-char uart_getc();
-int uart_getsize(char* buf, int size);
-char uart_getc_boot();
-void uart_puts(char *s);
-uart_printf(char* fmt,...);
+unsigned int sprintf(char *dst, char* fmt, ...);
+unsigned int vsprintf(char *dst,char* fmt, __builtin_va_list args);

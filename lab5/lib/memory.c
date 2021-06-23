@@ -3,7 +3,7 @@
 #include "uart.h"
 
 #define NULL                ((void *)0)
-#define MAX_MEMORY          (unsigned long)0x20010000
+#define MAX_MEMORY          (unsigned long)0x20020000
 #define MIN_MEMORY          (unsigned long)0x20000000
 #define FRAME_SIZE          (unsigned long)0x1000
 #define BLOCK_STRUCT_ADDR   ((unsigned long*) 0x10000000)
@@ -11,6 +11,7 @@
 #define BUCKET_STRUCT_ADDR  ((unsigned long*) 0x18000000)
 #define CHUNK_STRUCT_ADDR   ((unsigned long*) 0x1C000000)
 #define MIN_CHUNK_SIZE      16
+#define DEBUG               0
 
 /*
 --------------------------------
@@ -380,19 +381,26 @@ void free_frame(void *addr) {
     Buddy *buddy = (Buddy *)BUDDY_STRUCT_ADDR;
     Block *tmp;
 
+    #if DEBUG
     uart_puts("freed address: 0x");
     dec_hex((unsigned long)addr, str);
     uart_puts(str);
     memset(str, 0, 20);
     uart_puts(", Block id is: ");
+    #endif
 
     Block *deallocated = compute_block(addr);
+
+    #if DEBUG
     itoa(deallocated->index, str);
     uart_puts(str);
     memset(str, 0, 20);
+    #endif
 
     // print log
     Block *log = deallocated;
+
+    #if DEBUG
     while (1) {
         if (log->allocated_chain) {
             uart_puts(" and ");
@@ -403,7 +411,11 @@ void free_frame(void *addr) {
         }
         else break;
     }
+    #endif
+
+    #if DEBUG
     uart_puts("\n");
+    #endif
 
     while (1) {
         // insert to linked list
@@ -425,6 +437,7 @@ void free_frame(void *addr) {
         }
         else break;
     }
+    #if DEBUG
     uart_puts("Total freed frame: ");
     itoa(total, str);
     uart_puts(str);
@@ -434,8 +447,8 @@ void free_frame(void *addr) {
     uart_puts(str);
     memset(str, 0, 20);
     uart_puts("B\n");
-
     if (!merge_result) uart_puts("No merge!!!\n");
+    #endif
 }
 
 void *allocate_frame(unsigned long n) {
@@ -451,6 +464,7 @@ void *allocate_frame(unsigned long n) {
     Buddy *buddy = (Buddy *)BUDDY_STRUCT_ADDR;
     unsigned long required_frame = frame_ceil(FRAME_SIZE, n);
 
+    #if DEBUG
     uart_puts("Requesting ");
     itoa(n, str);
     uart_puts(str);
@@ -460,6 +474,7 @@ void *allocate_frame(unsigned long n) {
     uart_puts(str);
     memset(str, 0, 20);
     uart_puts(" frame)\n");
+    #endif
 
     // 1
     int level = compute_level(n);
@@ -506,7 +521,8 @@ void *allocate_frame(unsigned long n) {
             child1->next = child2;
             child2->previous = child1;
 
-            // print log            
+            // print log
+            #if DEBUG      
             uart_puts("Block ");
             itoa(parent->index, str);
             uart_puts(str);
@@ -519,7 +535,8 @@ void *allocate_frame(unsigned long n) {
             itoa(child2->index, str);
             uart_puts(str);
             memset(str, 0, 20);
-            uart_puts("\n");           
+            uart_puts("\n");
+            #endif           
 
             parent = child1;
         }        
@@ -544,19 +561,24 @@ void *allocate_frame(unsigned long n) {
     void *addr = compute_addr(level, allocated->index);
     
     // print log
+    #if DEBUG
     itoa(allocated->index, str);
     uart_puts("Block ");
     uart_puts(str);
     memset(str, 0, 20);
+    #endif
 
     while (allocated->allocated_chain) {
+        #if DEBUG
         uart_puts(", Block ");
         itoa(allocated->allocated_chain->index, str);
         uart_puts(str);
         memset(str, 0, 20);
+        #endif
         allocated = allocated->allocated_chain;
     }
 
+    #if DEBUG
     uart_puts(" is allocated. Total frame: ");
     itoa(required_frame, str);
     uart_puts(str);
@@ -566,6 +588,7 @@ void *allocate_frame(unsigned long n) {
     uart_puts(str);
     memset(str, 0, 20);
     uart_puts("\n");
+    #endif
     return addr;
 }
 
@@ -900,19 +923,32 @@ void *malloc(unsigned long n) {
     int num_bucket = WhichPowerOfTwo(FRAME_SIZE) - WhichPowerOfTwo(MIN_CHUNK_SIZE);
     unsigned long max_bucket_size = (bucket + num_bucket - 1)->size;
     void *addr;
+    
+    #if DEBUG
     uart_puts("\n--------malloc---------\n");
-
+    #endif
+    
     if (max_bucket_size != FRAME_SIZE/2) uart_puts("size BUGGGGG!!");
 
     if (n > max_bucket_size) addr = allocate_frame(n);
     else addr = allocate_chunk(n);
+    
+    #if DEBUG
     uart_puts("------malloc end-------\n");
+    #endif
+    
     return addr;
 }
 
 void free(void *addr) {
+    #if DEBUG
     uart_puts("\n--------free---------\n");
+    #endif
+
     int res = free_chunk(addr);
     if (!res) free_frame(addr);
+
+    #if DEBUG
     uart_puts("------free end-------\n");
+    #endif
 }
